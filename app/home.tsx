@@ -1,219 +1,157 @@
-import React from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, FlatList } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+import type { StackNavigationProp } from "@react-navigation/stack"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { StatusBar } from 'expo-status-bar';
 
-// Định nghĩa kiểu RootParamList cho Stack Navigator
 type RootParamList = {
-    Login: undefined;
-    Home: undefined;
-    SignUp: undefined;
-    ResetPass: undefined;
-    Welcome: undefined;
-    Detail: undefined;
-};
+    Home: undefined
+    Detail: { item: any }
+    Setting: undefined
+    Profile: undefined
+}
 
-type LoginScreenNavigationProp = StackNavigationProp<RootParamList, 'Home'>;
+type NavigationContainer = StackNavigationProp<RootParamList, "Detail">
+type navi = StackNavigationProp<RootParamList, "Setting">
+
+type CoffeeItem = {
+    _id: string
+    anh: string
+    ten: string
+    moTa: string
+    gia: number
+}
 
 const HomeScreen = () => {
-    const categories = ['All', 'Cappuccino', 'Espresso', 'Americano', 'Macchiato'];
-    const navigation = useNavigation<LoginScreenNavigationProp>();
+    const [coffeeData, setCoffeeData] = useState([])
+    const categories = ["All", "Cappuccino", "Espresso", "Americano", "Macchiato"]
+    const navigation = useNavigation<NavigationContainer>()
+    const navi = useNavigation<navi>()
+
+    useEffect(() => {
+        fetch("http://192.168.100.163:3000/data")
+            .then((response) => response.json())
+            .then((data) => setCoffeeData(data))
+            .catch((error) => console.error("Error fetching data:", error))
+    }, [])
+
+    const renderCoffeeItem = ({ item }: { item: CoffeeItem }) => (
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Detail", { item })}>
+            <Image source={{ uri: item.anh }} style={styles.cardImage} />
+            <Text style={styles.cardTitle}>{item.ten}</Text>
+            <Text style={styles.cardSubtitle}>{item.moTa}</Text>
+            <View style={styles.cardFooter}>
+                <Text style={styles.cardPrice}>
+                    <Text style={styles.cardPriceSymbol}>${item.gia}</Text>
+                </Text>
+                <TouchableOpacity style={styles.addToCartButton}>
+                    <Text style={styles.addToCartText}>+</Text>
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
+    )
 
     return (
-        <View style={styles.container}>
-            {/* Scrollable Content */}
+        <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Ô bo góc chứa hình ảnh */}
-                <View style={styles.iconRowContainer}>
-                    <View style={styles.iconContainer}>
-                        <Image
-                            source={require('../assets/images/ele.png')}  // Hình ảnh bên trái
-                            style={styles.iconImage}
-                        />
-                    </View>
-                    <View style={styles.iconContainer}>
-                        <Image
-                            source={require('../assets/images/avt.png')}  // Hình ảnh bên phải
-                            style={styles.iconImage}
-                        />
-                    </View>
+
+                <StatusBar translucent={true} backgroundColor="transparent" style="light" />
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navi.navigate("Setting")}>
+                        <Image source={require('../assets/images/nav.png')} />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Home</Text>
+                    <TouchableOpacity onPress={() => navi.navigate("Profile")}>
+                        <Image source={require("../assets/images/user.png")} />
+                    </TouchableOpacity>
                 </View>
 
-                {/* Tiêu đề header */}
                 <View style={styles.headerContainer}>
                     <Text style={styles.headerTitle}>Find the best</Text>
                     <Text style={styles.headerTitle}>coffee for you</Text>
                     <View style={styles.searchContainer}>
-                        <Image
-                            source={require('../assets/images/search.png')}
-                            style={styles.searchIcon}
-                        />
-                        <TextInput
-                            style={styles.searchBar}
-                            placeholder="Find Your Coffee..."
-                            placeholderTextColor="#666"
-                        />
+                        <Image source={require("../assets/images/search.png")} style={styles.searchIcon} />
+                        <TextInput style={styles.searchBar} placeholder="Find Your Coffee..." placeholderTextColor="#666" />
                     </View>
-
                 </View>
 
-                {/* Categories */}
-                <View style={styles.categoriesContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                     {categories.map((category, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[styles.categoryButton, index === 0 && styles.activeCategory]}>
+                        <TouchableOpacity key={index} style={[styles.categoryButton, index === 0 && styles.activeCategory]}>
                             <Text style={[styles.categoryText, index === 0 && styles.activeCategoryText]}>{category}</Text>
                         </TouchableOpacity>
                     ))}
-                </View>
+                </ScrollView>
 
-                {/* Coffee Grid */}
-                <View style={styles.gridContainer}>
-                    {/* Coffee Item 1 */}
+                <Text style={styles.sectionTitle}>Coffee</Text>
+                <FlatList
+                    data={coffeeData}
+                    renderItem={renderCoffeeItem}
+                    keyExtractor={(item) => item._id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalList}
+                />
 
-                    <View style={styles.card}>
-                        <Image
-                            source={require('../assets/images/capuchino.png')}
-                            style={styles.cardImage}
-                        />
-                        <Text style={styles.cardTitle}>Cappuccino</Text>
-                        <Text style={styles.cardSubtitle}>With Steamed Milk</Text>
-                        <View style={styles.cardFooter}>
-                            <Text style={styles.cardPrice}>
-                                <Text style={styles.cardPriceSymbol}>$</Text>4.20
-                            </Text>
-                            <TouchableOpacity style={styles.addToCartButton}>
-                                <Text style={styles.addToCartText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Coffee Item 2 */}
-                    <View style={styles.card}>
-                        <Image
-                            source={require('../assets/images/capu.png')}
-                            style={styles.cardImage}
-                        />
-                        <Text style={styles.cardTitle}>Cappuccino</Text>
-                        <Text style={styles.cardSubtitle}>With Foam</Text>
-                        <View style={styles.cardFooter}>
-                            <Text style={styles.cardPrice}>
-                                <Text style={styles.cardPriceSymbol}>$</Text>4.20
-                            </Text>
-                            <TouchableOpacity style={styles.addToCartButton}>
-                                <Text style={styles.addToCartText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Coffee Beans Section */}
                 <Text style={styles.sectionTitle}>Coffee beans</Text>
-                <View style={styles.gridContainer}>
-                    {/* Coffee Bean 1 */}
-                    <View style={styles.card}>
-                        <TouchableOpacity onPress={() => navigation.navigate('Detail')}>
-                            <Image
-                                source={require('../assets/images/mat.png')}
-                                style={styles.cardImage}
-                            />
-                        </TouchableOpacity>
-                        <Text style={styles.cardTitle}>Robusta Beans</Text>
-                        <Text style={styles.cardSubtitle}>Medium Roasted</Text>
-                        <View style={styles.cardFooter}>
-                            <Text style={styles.cardPrice}>
-                                <Text style={styles.cardPriceSymbol}>$</Text>4.20
-                            </Text>
-                            <TouchableOpacity style={styles.addToCartButton}>
-                                <Text style={styles.addToCartText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Coffee Bean 2 */}
-                    <View style={styles.card}>
-                        <Image
-                            source={require('../assets/images/mat.png')}
-                            style={styles.cardImage}
-                        />
-                        <Text style={styles.cardTitle}>Cappuccino</Text>
-                        <Text style={styles.cardSubtitle}>With Steamed Milk</Text>
-                        <View style={styles.cardFooter}>
-                            <Text style={styles.cardPrice}>
-                                <Text style={styles.cardPriceSymbol}>$</Text>4.20
-                            </Text>
-                            <TouchableOpacity style={styles.addToCartButton}>
-                                <Text style={styles.addToCartText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+                <FlatList
+                    data={coffeeData}
+                    renderItem={renderCoffeeItem}
+                    keyExtractor={(item) => item._id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalList}
+                />
             </ScrollView>
-
-            {/* Bottom Navigation */}
-            <View style={styles.bottomNavigation}>
-                <TouchableOpacity style={styles.navItem}>
-                    <Image source={require('../assets/images/home.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Image source={require('../assets/images/bag-2.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Image source={require('../assets/images/tym.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Image source={require('../assets/images/noti.png')} />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-};
+        </SafeAreaView>
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0C0F14',
+        backgroundColor: "#0C0F14",
     },
     scrollContent: {
         paddingHorizontal: 16,
         paddingBottom: 80,
     },
     iconContainer: {
-        backgroundColor: '#1a1a1a', // Màu nền cho ô chứa hình ảnh
-        borderRadius: 5,  // Bo góc cho ô
-        width: 30,         // Kích thước ô
+        backgroundColor: "#1a1a1a",
+        borderRadius: 5,
+        width: 30,
         height: 30,
-        justifyContent: 'center',  // Căn giữa hình ảnh trong ô
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
     iconRowContainer: {
-        flexDirection: 'row',   // Sắp xếp các phần tử theo hàng ngang
-        justifyContent: 'space-between',  // Căn giữa các phần tử ở hai góc
-        alignItems: 'center',  // Căn giữa theo chiều dọc
-        marginTop: 20,          // Khoảng cách giữa các ô
-        marginLeft: 15,         // Đặt khoảng cách từ bên trái
-        marginRight: 15,        // Đặt khoảng cách từ bên phải
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 20,
+        marginLeft: 15,
+        marginRight: 15,
         marginBottom: 20,
     },
     iconImage: {
-        width: 30,        // Kích thước hình ảnh
+        width: 30,
         height: 30,
-        borderRadius: 8,  // Bo góc cho hình ảnh nếu cần
+        borderRadius: 8,
     },
     headerContainer: {
         marginBottom: 20,
     },
     headerTitle: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 30,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 10,
     },
     searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#1a1a1a',
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#1a1a1a",
         borderRadius: 15,
         padding: 0,
     },
@@ -224,113 +162,106 @@ const styles = StyleSheet.create({
         marginStart: 20,
     },
     searchBar: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: "#1a1a1a",
         borderRadius: 15,
         padding: 15,
-        color: '#52555A',
+        color: "#52555A",
+        flex: 1,
     },
     categoriesContainer: {
-        flexDirection: 'row',
         marginBottom: 20,
     },
     categoryButton: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: "#1a1a1a",
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 20,
         marginRight: 10,
     },
     activeCategory: {
-        backgroundColor: '#D17842',
+        backgroundColor: "#D17842",
     },
     categoryText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 14,
     },
     activeCategoryText: {
-        color: '#fff',
-        fontWeight: 'bold',
+        color: "#fff",
+        fontWeight: "bold",
+    },
+    horizontalList: {
+        paddingRight: 16,
     },
     gridContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
     },
     card: {
-        backgroundColor: '#252A32',
+        backgroundColor: "#252A32",
         borderRadius: 16,
         marginBottom: 20,
-        width: '48%',
+        width: 160,
         padding: 12,
+        marginRight: 16,
     },
     cardImage: {
-        width: '100%',
+        width: "100%",
         height: 140,
         borderRadius: 12,
         marginBottom: 10,
-        alignItems: 'center',
     },
     cardTitle: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 4,
     },
     cardSubtitle: {
-        color: '#666',
+        color: "#B4B7C1",
         fontSize: 12,
-        marginBottom: 12,
+        marginBottom: 8,
     },
     cardFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     cardPrice: {
-        color: '#fff',
+        color: "#D17842",
         fontSize: 16,
+        fontWeight: "bold",
     },
     cardPriceSymbol: {
-        color: '#ff8c00',
-        fontWeight: 'bold',
+        fontSize: 12,
     },
     addToCartButton: {
-        backgroundColor: '#D17842',
-        borderRadius: 8,
-        padding: 10,
+        backgroundColor: "#D17842",
+        padding: 8,
+        borderRadius: 12,
     },
     addToCartText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
+        color: "#fff",
+        fontSize: 20,
     },
     sectionTitle: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 18,
-        fontWeight: 'bold',
-        marginVertical: 10,
+        fontWeight: "bold",
+        marginBottom: 12,
     },
-    bottomNavigation: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+    header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: '#0C0F14',
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#0C0F14',
-    },
-    navItem: {
         alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
+        marginBottom: 20,
     },
-    navIcon: {
-        fontSize: 24,
+    title: {
+        fontSize: 18,
         color: '#fff',
+        fontWeight: 'bold',
     },
-});
+})
 
-export default HomeScreen;
+export default HomeScreen
+

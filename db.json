@@ -1,0 +1,82 @@
+{
+    "status": 200,
+    "message": "Lấy dữ liệu thành công!",
+    "data": [
+      {
+        "_id": "67ba765df3cb8ab5c6cb310b",
+        "ten": "Espresso",
+        "diKem": "None",
+        "cachRang": "Dark roast",
+        "danhGia": 4.8,
+        "soLuong": 120,
+        "moTa": "A strong and concentrated coffee, originating from Italy.",
+        "gia": 3.5,
+        "anh": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/%28A_Donde_Vamos%2C_Quito%29_Chocolate_of_Ecuador_and_Espresso.JPG/220px-%28A_Donde_Vamos%2C_Quito%29_Chocolate_of_Ecuador_and_Espresso.JPG",
+        "loai": 1,
+        "createdAt": "2025-02-23T01:14:05.397Z",
+        "updatedAt": "2025-02-23T01:24:06.199Z",
+        "__v": 0
+      },
+      {
+        "_id": "67ba7671f3cb8ab5c6cb310d",
+        "ten": "Cappuccino",
+        "diKem": "Steamed milk",
+        "cachRang": "Medium roast",
+        "danhGia": 4.7,
+        "soLuong": 90,
+        "moTa": "A classic Italian coffee with equal parts espresso, steamed milk, and foam.",
+        "gia": 4.5,
+        "anh": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Cappuccino_PeB.jpg/220px-Cappuccino_PeB.jpg",
+        "loai": 1,
+        "createdAt": "2025-02-23T01:14:25.688Z",
+        "updatedAt": "2025-02-23T01:25:59.640Z",
+        "__v": 0
+      },
+      {
+        "_id": "67ba769ff3cb8ab5c6cb3110",
+        "ten": "Americano",
+        "diKem": "Hot water",
+        "cachRang": "Medium roast",
+        "danhGia": 4.5,
+        "soLuong": 110,
+        "moTa": "A diluted espresso with hot water, popular in the United States.",
+        "gia": 3,
+        "anh": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg/220px-Hokitika_Cheese_and_Deli%2C_Hokitika_%283526706594%29.jpg",
+        "loai": 1,
+        "createdAt": "2025-02-23T01:15:11.803Z",
+        "updatedAt": "2025-02-23T01:26:22.176Z",
+        "__v": 0
+      },
+      {
+        "_id": "67ba76a8f3cb8ab5c6cb3112",
+        "ten": "Latte",
+        "diKem": "Steamed milk",
+        "cachRang": "Light roast",
+        "danhGia": 4.6,
+        "soLuong": 100,
+        "moTa": "A creamy coffee made with espresso and steamed milk, often topped with a small amount of foam.",
+        "gia": 5,
+        "anh": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Latte_at_Doppio_Ristretto_Chiang_Mai_01.jpg/220px-Latte_at_Doppio_Ristretto_Chiang_Mai_01.jpg",
+        "loai": 1,
+        "createdAt": "2025-02-23T01:15:20.500Z",
+        "updatedAt": "2025-02-23T01:26:26.295Z",
+        "__v": 0
+      },
+      {
+        "_id": "67ba76aff3cb8ab5c6cb3114",
+        "ten": "Flat White",
+        "diKem": "Microfoam",
+        "cachRang": "Medium roast",
+        "danhGia": 4.9,
+        "soLuong": 80,
+        "moTa": "A velvety coffee originating from Australia/New Zealand, made with espresso and microfoam.",
+        "gia": 4.75,
+        "anh": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/%28A_Donde_Vamos%2C_Quito%29_Chocolate_of_Ecuador_and_Espresso.JPG/220px-%28A_Donde_Vamos%2C_Quito%29_Chocolate_of_Ecuador_and_Espresso.JPG",
+        "loai": 1,
+        "createdAt": "2025-02-23T01:15:27.881Z",
+        "updatedAt": "2025-02-23T01:26:31.103Z",
+        "__v": 0
+      }
+    ]
+  }
+  

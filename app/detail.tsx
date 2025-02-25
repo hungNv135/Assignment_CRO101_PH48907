@@ -1,99 +1,178 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from "react-native"
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import React, { useState , useEffect } from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window")
+
+type CartItem = {
+  _id: string;
+  ten: string;
+  gia: number;
+  anh: string;
+  quantity: number;
+  diKem?: string;
+  danhGia?: number;
+  moTa?: string;
+  cachRang?: string;
+};
+
+type RootStackParamList = {
+  Detail: {
+    item: CartItem;
+  };
+};
+
+type DetailScreenRouteProp = RouteProp<RootStackParamList, 'Detail'>;
 
 const DetailScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute<DetailScreenRouteProp>();
+  const { item } = route.params;
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const loadData = async () => {
+      // Load cart
+      const storedCart = await AsyncStorage.getItem("cart");
+      if (storedCart) {
+        setCart(JSON.parse(storedCart));
+      }
+      
+      // Check if item is in favorites
+      const storedFavorites = await AsyncStorage.getItem("favorites");
+      if (storedFavorites) {
+        const favorites = JSON.parse(storedFavorites);
+        setIsFavorite(favorites.some((fav: CartItem) => fav._id === item._id));
+      }
+    };
+    loadData();
+  }, [item._id]);
+
+  const toggleFavorite = async () => {
+    try {
+      const storedFavorites = await AsyncStorage.getItem("favorites");
+      let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+      
+      if (isFavorite) {
+        favorites = favorites.filter((fav: CartItem) => fav._id !== item._id);
+      } else {
+        favorites = [...favorites, item];
+      }
+      
+      await AsyncStorage.setItem("favorites", JSON.stringify(favorites));
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+    }
+  };
+
+  const addToCart = async () => {
+    let updatedCart;
+    const existingItem = cart.find((cartItem) => cartItem._id === item._id);
+    if (existingItem) {
+      updatedCart = cart.map((cartItem) =>
+        cartItem._id === item._id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+      );
+    } else {
+      updatedCart = [...cart, { ...item, quantity: 1 }];
+    }
+    setCart(updatedCart);
+    await AsyncStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Phần trên với ảnh lớn */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={require('../assets/images/cafe.png')}
-          style={styles.largeImage}
-        />
-        <View style={styles.textContainer}>
-
-          <View style={styles.leftContainer}>
-            <Text style={styles.name}>Robusta Beans</Text>
-            <Text style={styles.manufacturer}>From Africa</Text>
-            <View style={styles.priceContainer}>
-              <Image source={require('../assets/images/sao.png')} style={styles.priceIcon} />
-              <Text style={styles.price}>4.5</Text>
-            </View>
-          </View>
-
-          <View style={styles.rightContainer}>
-
-            <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.button}>
-                <Image source={require('../assets/images/cs.png')} style={styles.buttonImage} />
-                <Text style={styles.buttonText}>Bean</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.button}>
-                <Image source={require('../assets/images/lc.png')} style={styles.buttonImage} />
-                <Text style={styles.buttonText}>Africa</Text>
-              </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: item.anh }} style={styles.largeImage} />
+          <View style={styles.textContainer}>
+            <View style={styles.leftContainer}>
+              <Text style={styles.name}>{item.ten}</Text>
+              <Text style={styles.manufacturer}>{item.diKem}</Text>
+              <View style={styles.priceContainer}>
+                <Image source={require("../assets/images/sao.png")} style={styles.priceIcon} />
+                <Text style={styles.price}>{item.danhGia}</Text>
+              </View>
             </View>
 
-            <TouchableOpacity style={[styles.button, styles.button3]}>
-              <Text style={styles.buttonText}>Medium Roasted</Text>
-            </TouchableOpacity>
+            <View style={styles.rightContainer}>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.button}>
+                  <Image source={require("../assets/images/cs.png")} style={styles.buttonImage} />
+                  <Text style={styles.buttonText}>Bean</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.button}>
+                  <Image source={require("../assets/images/lc.png")} style={styles.buttonImage} />
+                  <Text style={styles.buttonText}>{item.cachRang}</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={[styles.button, styles.button3]}>
+                <Text style={styles.buttonText}>{item.cachRang}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.imageTopContainer}>
-        <Image
-          source={require('../assets/images/back.png')}
-          style={styles.imageTopLeft}
-        />
-        <Image
-          source={require('../assets/images/heart.png')}
-          style={styles.imageTopRight}
-        />
-      </View>
-
-
-      {/* Phần dưới */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.title}>Description</Text>
-        <Text style={styles.description}>Arabica beans are by far the most popular type of coffee beans, making up about 60% of the world’s coffee. These tasty beans originated many centuries ago in the highlands of Ethiopia, and may even be the first coffee beans ever consumed! </Text>
-        <Text style={styles.title}>Size</Text>
-        {/* Nút chọn size */}
-        <View style={styles.sizeContainer}>
-          <TouchableOpacity style={styles.sizeButton}><Text style={styles.sizeText}>250gm</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.sizeButton}><Text style={styles.sizeText}>500gm</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.sizeButton}><Text style={styles.sizeText}>1000gm</Text></TouchableOpacity>
-        </View>
-
-        {/* Giá và nút thêm vào giỏ hàng */}
-        <View style={styles.footerContainer}>
-          <View style={styles.priceSection}>
-            <Text style={styles.priceLabel}>Price</Text>
-            <View style={styles.priceRow}>
-              <Text style={styles.dollarSign}>$</Text>
-              <Text style={styles.footerPrice}>10.50</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.addToCartButton}>
-            <Text style={styles.addToCartText}>Add to Cart</Text>
+        <View style={styles.imageTopContainer}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={require("../assets/images/back.png")} style={styles.imageTopLeft} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleFavorite}>
+            <Image source={require("../assets/images/heart.png")} style={styles.imageTopRight} />
           </TouchableOpacity>
         </View>
 
-      </View>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.title}>Description</Text>
+          <Text style={styles.description}>{item.moTa}</Text>
+          <Text style={styles.title}>Size</Text>
+          <View style={styles.sizeContainer}>
+            <TouchableOpacity style={styles.sizeButton}>
+              <Text style={styles.sizeText}>250gm</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sizeButton}>
+              <Text style={styles.sizeText}>500gm</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sizeButton}>
+              <Text style={styles.sizeText}>1000gm</Text>
+            </TouchableOpacity>
+          </View>
 
-    </View>
-  );
-};
+          <View style={styles.footerContainer}>
+            <View style={styles.priceSection}>
+              <Text style={styles.priceLabel}>Price</Text>
+              <View style={styles.priceRow}>
+                <Text style={styles.dollarSign}>$</Text>
+                <Text style={styles.footerPrice}>{item.gia}</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.addToCartButton} onPress={addToCart}>
+              <Text style={styles.addToCartText}>Add to Cart</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: '#0C0F14',
-    justifyContent: 'flex-start',
+    paddingHorizontal: 0,  
+    paddingTop: 0,        
+    paddingBottom: 0,    
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 0,  
+    paddingTop: 0,        
   },
   imageContainer: {
     width: '100%',
@@ -113,8 +192,8 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
   leftContainer: {
     flex: 1,
@@ -214,7 +293,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '90%',
-
   },
   imageTopLeft: {
     width: 10,
@@ -230,16 +308,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 20,
   },
-
-
   detailsContainer: {
-    padding: 20,
+    paddingHorizontal: 0,  
+    paddingTop: 10,       
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#fff'
+    color: '#fff',
   },
   description: {
     fontSize: 14,
